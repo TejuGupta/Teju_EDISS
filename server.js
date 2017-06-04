@@ -2,7 +2,7 @@
 // all that we need
 var express  = require('express');
 var app      = express();
-var port     = process.env.PORT || 8080;
+var port     = process.env.PORT || 3000;
 var mysql = require('mysql');
 var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
