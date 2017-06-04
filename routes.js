@@ -191,8 +191,7 @@ module.exports = function(app, passport) {
 			  console.log(obj+" ..");		
 			  res.setHeader('Content-Type', 'application/json');
 			  res.send(obj);
-			   req.logout();
-               req.session.destroy();
+		      req.session.destroy();
 				
 			}	
        
