@@ -52,21 +52,20 @@ module.exports = function(app, passport) {
 	app.post(
 	'/add',  
      function(req, res) { 
-			console.log('entered');
-			console.log(req.body.num1+ " " + req.body.num2);
-			var result = +req.body.num1 + +req.body.num2;
+
+			var result = Number(req.body.num1)+Number(req.body.num2);
 			var name=req.session.username;
+	
 			if(typeof name === 'undefined' || name == null)
 			{
-			  var obj= '{"message":"You are not currently logged in"}'; 
-			  console.log(obj+" ..");
+			  var obj= '{"message":"You are not currently logged in"}'; 	
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
 			  res.send(obj);
 				
 			}
 	      
-		else  if(!validator.isNumeric(req.body.num1) || !validator.isNumeric(req.body.num2) || validator.isEmpty(req.body.num1) || validator.isEmpty(req.body.num2))
+		else if(isNaN(Number(req.body.num1)) || isNaN(Number(req.body.num2)) || !(req.body.num1) || !(req.body.num2))
 		  {
 			  var obj= '{"message":"The numbers you entered are not valid"}'; 
 			  console.log(obj+" ..");
@@ -78,7 +77,7 @@ module.exports = function(app, passport) {
 		  
 		  else
 		  {
-			  var obj= '{"message":"The action was successful","result":"'+result+'"}'; 
+			  var obj= '{"message":"The action was successful","result":'+result+'}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -94,7 +93,7 @@ module.exports = function(app, passport) {
      function(req, res) { 
 			console.log('entered');
 			console.log(req.body.num1+ " " + req.body.num2);
-			var result = req.body.num1 * req.body.num2;
+			var result = Number(req.body.num1)* Number(req.body.num2);
 			var name=req.session.username;
 			if(typeof name === 'undefined' || name == null)
 			{
@@ -106,7 +105,7 @@ module.exports = function(app, passport) {
 				
 			}
 	      
-		else  if(!validator.isNumeric(req.body.num1) || !validator.isNumeric(req.body.num2) || validator.isEmpty(req.body.num1) || validator.isEmpty(req.body.num2))
+		else  if(isNaN(Number(req.body.num1)) || isNaN(Number(req.body.num2)) || !(req.body.num1) || !(req.body.num2))
 		  {
 			  var obj= '{"message":"The numbers you entered are not valid"}'; 
 			  console.log(obj+" ..");
@@ -135,7 +134,7 @@ module.exports = function(app, passport) {
      function(req, res) { 
 			console.log('entered');
 			console.log(req.body.num1+ " " + req.body.num2);
-			var result = req.body.num1 / req.body.num2;
+			var result = Number(req.body.num1) / Number(req.body.num2);
 			var name=req.session.username;
 			var num= req.body.num2;
 		  	if(typeof name === 'undefined' || name == null)
@@ -148,7 +147,7 @@ module.exports = function(app, passport) {
 				
 			}
 	     
-		 else if(!validator.isNumeric(req.body.num1) || !validator.isNumeric(req.body.num2) || validator.isEmpty(req.body.num1) || validator.isEmpty(req.body.num2) || (num == 0))
+		 else if(isNaN(Number(req.body.num1)) || isNaN(Number(req.body.num2)) || !(req.body.num1) || !(req.body.num2) || (num == 0))
 		  {
 			  var obj= '{"message":"The numbers you entered are not valid"}'; 
 			  console.log(obj+" ..");
