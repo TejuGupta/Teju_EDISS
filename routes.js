@@ -117,7 +117,7 @@ module.exports = function(app, passport) {
 		  
 		  else
 		  {
-			  var obj= '{"message":"The action was successful","result":"'+result+'"}'; 
+			  var obj= '{"message":"The action was successful","result":'+result+'}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -159,7 +159,7 @@ module.exports = function(app, passport) {
 		  
 		  else 
 		  {
-			  var obj= '{"message":"The action was successful","result":"'+result+'"}'; 
+			  var obj= '{"message":"The action was successful","result":'+result+'}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
