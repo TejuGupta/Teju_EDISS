@@ -23,7 +23,7 @@ module.exports = function(app, passport) {
 		  function(err, rows, fields) {
 		  if (!err && rows.length > 0)
 		  {    
-			  var obj= '{“message”:“Welcome '+rows[0].firstname+'"}';
+			  var obj= '{"message":"Welcome '+rows[0].firstname+'"}';
 			  req.session.username=req.body.username;
 			  req.session.touch();
 			  console.log("name"+req.session.username);
@@ -37,7 +37,7 @@ module.exports = function(app, passport) {
 		  }
 		  else		  
 		  {    
-			  var obj= '{“message”:“There seems to be an issue with the username/password combination that you entered"}';
+			  var obj= '{"message":"There seems to be an issue with the username/password combination that you entered"}';
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -58,7 +58,7 @@ module.exports = function(app, passport) {
 			var name=req.session.username;
 			if(typeof name === 'undefined' || name == null)
 			{
-			  var obj= '{“message”:“You are not currently logged in”}'; 
+			  var obj= '{"message":"You are not currently logged in"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -68,7 +68,7 @@ module.exports = function(app, passport) {
 	      
 		else  if(!validator.isNumeric(req.body.num1) || !validator.isNumeric(req.body.num2) || validator.isEmpty(req.body.num1) || validator.isEmpty(req.body.num2))
 		  {
-			  var obj= '{“message”:“The numbers you entered are not valid”}'; 
+			  var obj= '{"message":"The numbers you entered are not valid"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -78,7 +78,7 @@ module.exports = function(app, passport) {
 		  
 		  else
 		  {
-			  var obj= '{“message”:“The action was successful”,"result":"'+result+'"}'; 
+			  var obj= '{"message":"The action was successful","result":"'+result+'"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -98,7 +98,7 @@ module.exports = function(app, passport) {
 			var name=req.session.username;
 			if(typeof name === 'undefined' || name == null)
 			{
-			  var obj= '{“message”:“You are not currently logged in”}'; 
+			  var obj= '{"message":"You are not currently logged in"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -108,7 +108,7 @@ module.exports = function(app, passport) {
 	      
 		else  if(!validator.isNumeric(req.body.num1) || !validator.isNumeric(req.body.num2) || validator.isEmpty(req.body.num1) || validator.isEmpty(req.body.num2))
 		  {
-			  var obj= '{“message”:“The numbers you entered are not valid”}'; 
+			  var obj= '{"message":"The numbers you entered are not valid"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -118,7 +118,7 @@ module.exports = function(app, passport) {
 		  
 		  else
 		  {
-			  var obj= '{“message”:“The action was successful”,"result":"'+result+'"}'; 
+			  var obj= '{"message":"The action was successful","result":"'+result+'"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -140,7 +140,7 @@ module.exports = function(app, passport) {
 			var num= req.body.num2;
 		  	if(typeof name === 'undefined' || name == null)
 			{
-			  var obj= '{“message”:“You are not currently logged in”}'; 
+			  var obj= '{"message":"You are not currently logged in"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -150,7 +150,7 @@ module.exports = function(app, passport) {
 	     
 		 else if(!validator.isNumeric(req.body.num1) || !validator.isNumeric(req.body.num2) || validator.isEmpty(req.body.num1) || validator.isEmpty(req.body.num2) || (num == 0))
 		  {
-			  var obj= '{“message”:“The numbers you entered are not valid”}'; 
+			  var obj= '{"message":"The numbers you entered are not valid"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -160,7 +160,7 @@ module.exports = function(app, passport) {
 		  
 		  else 
 		  {
-			  var obj= '{“message”:“The action was successful”,"result":"'+result+'"}'; 
+			  var obj= '{"message":"The action was successful","result":"'+result+'"}'; 
 			  console.log(obj+" ..");
 			  req.session.touch();
 			  res.setHeader('Content-Type', 'application/json');
@@ -178,7 +178,7 @@ module.exports = function(app, passport) {
 			var name=req.session.username;
 		  	if(typeof name === 'undefined' || name == null)
 			{
-			  var obj= '{“message”:“You are not currently logged in”}'; 
+			  var obj= '{"message":"You are not currently logged in"}'; 
 			  console.log(obj+" ..");
 			  res.setHeader('Content-Type', 'application/json');
 			  res.send(obj);
@@ -187,7 +187,7 @@ module.exports = function(app, passport) {
 			
 			else
 			{
-			  var obj= '{“message”:“You have been successfully logged out"}'; 
+			  var obj= '{"message":"You have been successfully logged out"}'; 
 			  console.log(obj+" ..");		
 			  res.setHeader('Content-Type', 'application/json');
 			  res.send(obj);
