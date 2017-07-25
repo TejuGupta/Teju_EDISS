@@ -1,0 +1,33 @@
+CREATE DEFINER=`root`@`localhost` FUNCTION `CHECKASIN`(input VARCHAR(255)) RETURNS tinyint(1)
+DETERMINISTIC
+BEGIN
+DECLARE cur_position INT DEFAULT 1;
+DECLARE remainder VARCHAR(255);
+DECLARE cur_string VARCHAR(255);
+DECLARE delim_length TINYINT UNSIGNED;
+DECLARE flag INT;
+
+SET remainder = input;
+SET delim_length = CHAR_LENGTH(',');
+WHILE CHAR_LENGTH(remainder) > 0 AND cur_position > 0 
+DO
+SET cur_position = INSTR(remainder, ',');
+   IF cur_position = 0 THEN
+          SET cur_string = remainder;		  
+          select count(*) into flag from productdata where asin=cur_string;
+          if(flag = 0) then
+		  RETURN 1;
+		  end if;
+          
+   ELSE
+          SET cur_string = LEFT(remainder, cur_position - 1);
+		  select count(*) into flag from productdata where asin=cur_string;
+          if(flag = 0) then
+		  RETURN 1;
+		  end if;
+  END IF;
+ SET remainder = SUBSTRING(remainder, cur_position + delim_length);
+ END WHILE;
+
+RETURN 0;
+END

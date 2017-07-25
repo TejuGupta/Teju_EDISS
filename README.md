@@ -1,1 +1,2 @@
-# Teju_EDISS
+# Ediss_Assignment2
+Ediss e-commerce application
