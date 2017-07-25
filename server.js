@@ -5,7 +5,7 @@ var redis = require('redis');
 var cookieParser = require('cookie-parser');
 var session = require ('express-session');
 var redisStore = require('connect-redis')(session);
-var port     = process.env.PORT || 6000;
+var port     = process.env.PORT || 8080;
 var mysql = require('mysql');
 var http = require('http');
 var morgan       = require('morgan');
@@ -142,7 +142,7 @@ else{
 		  else
 		  {
 			  var obj= '{"message":"'+req.body.fname+ ' was registered successfully"}';
-			  req.session.username=req.body.username;
+			  //req.session.username=req.body.username;
 			  console.log(obj+" ..");
 			 
 			  res.setHeader('Content-Type', 'application/json');
