@@ -65,7 +65,7 @@ rolling: true
 
 app.listen(port);
 console.log('e-commerce app listening on port' + port);
-
+console.log('e-commerce app listening on port' + client);
 		
 app.post('/login', function(req, res, next) { 
 var params =[req.body.username,req.body.password];
