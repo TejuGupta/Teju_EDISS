@@ -17,7 +17,7 @@ var client  = redis.createClient(6379,'myredis.zp1x8c.ng.0001.use1.cache.amazona
 
 //DB connection
 var connection = mysql.createConnection({
-  host     : 'mysql-useast1.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
+  host     : 'mysql-ediss.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
   port     :  3306,
   user     : 'trachapu',
   password : 'edisroot',
@@ -25,7 +25,7 @@ var connection = mysql.createConnection({
 });
 
 var readconnection = mysql.createConnection({
-  host     : 'readreplica.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
+  host     : 'myreadreplica.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
   port     :  3306,
   user     : 'trachapu',
   password : 'edisroot',
