@@ -186,7 +186,6 @@ console.log(req.body.fname+ " " + req.body.lname+ " " + req.body.address + " " +
 var password = req.body.password;
 var name= req.session.username;
 var msg= req.session.fname;
-var uname =req.body.username;
 if(typeof name === 'undefined' || name == null)
 {
   var obj= '{"message":"You are not currently logged in"}'; 	
@@ -507,37 +506,28 @@ var params =[req.body.asin,req.body.keyword,req.body.group];
 var pin= req.body.asin;
 var key= req.body.keyword;
 var grp = req.body.group;
-var productstring;
-var querystring= "SELECT * from productdata";
+var querystring;
 
 
-if(key)
-{
-	if(pin && !grp)
-	querystring="select * from ((SELECT * from productdata where productName like '%"+key+"%' or productDescription like '%"+key+"%') as temp) where asin='"+pin+"'";
-    else if(!pin && grp)
-	querystring="select * from ((SELECT * from productdata where productName like '%"+key+"%' or productDescription like '%"+key+"%') as temp) where `group` like '%"+grp+"%'";
-    else if(!pin && !grp)
-	querystring="select * from ((SELECT * from productdata where productName like '%"+key+"%' or productDescription like '%"+key+"%') as temp)";
-    else if(pin && grp)
-	querystring="select * from ((SELECT * from productdata where productName like '%"+key+"%' or productDescription like '%"+key+"%') as temp) where asin='"+pin+"' and `group` like '%"+grp+"%'";
-}  
-
-else
-{
-	if(pin && !grp)
-	querystring="SELECT * from productdata where asin='"+pin+"'";
-    else if(grp && !pin)
-	querystring="SELECT * from productdata where `group` like '%"+grp+"%'";
-    else if(pin && grp)
-	querystring="SELECT * from productdata where asin='"+pin+"' and `group` like '%"+grp+"%'";
-
-}
-
-console.log("querystring"+querystring);
 readconnectionPool.getConnection(function(err,readconnection){
+
+if(typeof req.body.asin === 'undefined' && typeof req.body.group ==='undefined' && typeof req.body.keyword === 'undefined'){
+	querystring = "SELECT asin, productName from productdata limit 1000;";
+}
+else{
+querystring = "SELECT asin, productName from productdata where";
+if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
+if(grp) { querystring += " `group` = "+ readconnection.escape(req.body.group)+ " or"; }
+if(key) { querystring+=  ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
+  
+querystring = querystring.slice(0,-2);
+querystring += 'limit 1000;';
+}
+console.log("querystring"+querystring);
+
 var queries = readconnection.query(querystring, function(err, rows, fields) {
    readconnection.release();
+   console.log("length..."+rows.length);
    if (!err && rows.length > 0 )
 	{    
 		  var obj= '{"message":"The action was successful","product":[';	
