@@ -13,24 +13,25 @@ var validator = require('validator');
 
 //DB connection
 
-var connection = mysql.createConnection({
-  host     : 'mysql-useast1.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
+var writeconnectionPool = mysql.createPool({
+  connectionLimit : 500,
+  host     : 'mysql-ediss.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
+  port     :  3306,
+  user     : 'trachapu',
+  password : 'edisroot',
+  database : 'edisprod'
+});
+
+
+var readconnectionPool = mysql.createPool({
+  connectionLimit : 500,
+  host     : 'myreadreplica.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
   port     :  3306,
   user     : 'trachapu',
   password : 'edisroot',
   database : 'edisprod',
   multipleStatements: 'true'
-});
-
-
-var readconnection = mysql.createConnection({
-  host     : 'readreplica.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
-  port     :  3306,
-  user     : 'trachapu',
-  password : 'edisroot',
-  database : 'edisprod',
-  multipleStatements: 'true'
-});
+}); 
 
 /*
 var connection = mysql.createConnection({
@@ -40,10 +41,10 @@ var connection = mysql.createConnection({
   password : 'admin',
   database : 'test',
   multipleStatements: 'true'
-});
-*/
-connection.connect();
-readconnection.connect();
+}); */
+
+//writeconnectionPool.connect();
+//readconnectionPool.connect();
 // set up express
 app.use(morgan('dev')); 
 app.use(cookieParser()); 
@@ -68,8 +69,9 @@ var params =[req.body.username,req.body.password];
 res.setHeader('Content-Type', 'application/json');
 console.log('entered');
 console.log(req.body.username+ " " + req.body.password); 
-  
+     readconnectionPool.getConnection(function(err,readconnection){
 		var queries = readconnection.query("SELECT * from userdata where username=? and password=?", params, function(err, rows, fields) {
+		readconnection.release();
 		if ((!err && rows.length > 0) )
 			{    
 		    
@@ -80,7 +82,7 @@ console.log(req.body.username+ " " + req.body.password);
 			}			
 		else if(err)
 			{			  
-			  readconnection.end();
+			  readconnection.release();
 			  return next(err); 
 			}
 		else		  
@@ -89,7 +91,7 @@ console.log(req.body.username+ " " + req.body.password);
 			  return res.send(obj);
 			} 
 		});
-	
+	 });
  (req,res,next);
 });
 
@@ -125,9 +127,10 @@ if(validator.isEmpty(req.body.fname) || validator.isEmpty(req.body.lname)  || va
 }		  
 
 else{
-  	  
-	   var queries = connection.query("INSERT INTO userdata set fname=? , lname=? , address=? ,  city =?, state=? , zip= ?, email=? , username= ?, password= ? ", params, 
+  	   writeconnectionPool.getConnection(function(err,writeconnection){
+	   var queries = writeconnection.query("INSERT INTO userdata set fname=? , lname=? , address=? ,  city =?, state=? , zip= ?, email=? , username= ?, password= ? ", params, 
 	   function(err, rows, fields) {
+		 writeconnection.release();
 		 if (err)
 			{
 			  var obj= '{"message":"The input you provided is not valid"}';	
@@ -138,13 +141,14 @@ else{
 		  else
 		  {
 			  var obj= '{"message":"'+req.body.fname+ ' was registered successfully"}';
-			  req.session.username=req.body.username;
+			  //req.session.username=req.body.username;
 			  console.log(obj+" ..");
 			 
 			  res.setHeader('Content-Type', 'application/json');
 			  return res.send(obj);  
 		  }		 
 		});	  
+	   });	
    
  }
  (req,res,next);
@@ -152,7 +156,7 @@ else{
 
 
 app.post('/logout', function(req, res,next) {
-console.log("logging out!");
+console.log("logging out!.. user "+req.session.username);
 var name=req.session.username;
 if(typeof name === 'undefined' || name == null)
 {
@@ -182,6 +186,7 @@ console.log(req.body.fname+ " " + req.body.lname+ " " + req.body.address + " " +
 var password = req.body.password;
 var name= req.session.username;
 var msg= req.session.fname;
+var uname =req.body.username;
 if(typeof name === 'undefined' || name == null)
 {
   var obj= '{"message":"You are not currently logged in"}'; 	
@@ -189,7 +194,7 @@ if(typeof name === 'undefined' || name == null)
   res.setHeader('Content-Type', 'application/json');
   return res.send(obj);
 	
-}			  
+}	
 
 else{
         var querystring= "UPDATE userdata set ";
@@ -234,28 +239,32 @@ else{
 	    querystring= querystring.substring(0, querystring.length - 1);
 		querystring+=" where username='" +name+"'";
 		console.log("Query String : %s ",querystring );
-		 var queries = connection.query(querystring, 
+		
+		
+		 writeconnectionPool.getConnection(function(err,writeconnection){
+		 var queries = writeconnection.query(querystring, 
 	     function(err, rows, fields) {
+		 writeconnection.release();
 		 if (err)
 			{
 			  
 			  console.log("Error updating : %s ",err );
 			  var obj= '{"message":"The input you provided is not valid"}';
-			  connection.end();
+			  writeconnection.release();
 			  return res.send(obj); 
 			
 		  }
 		  else
 		  {   
-			  req.session.username=req.body.username;
-
+	          if(req.body.username) { req.session.username=req.body.username; }
 			  if(req.body.fname) { msg= req.body.fname;}
 			  var obj= '{"message":"'+msg+ ' your information was successfully updated"}';
 			 			  
 			  res.setHeader('Content-Type', 'application/json');
 			  return res.send(obj);  
 		  }		 
-		});	 
+		});	
+	  });		
 
 }
  (req,res,next);
@@ -302,7 +311,10 @@ else{
 		  querystring=querystring+ " where lname like '%"+req.body.lname+"%'";
 		}
 		console.log("querystring"+querystring);
+		
+   readconnectionPool.getConnection(function(err,readconnection){
    var queries = readconnection.query(querystring,  function(err, rows, fields) {
+   readconnection.release();
    if (!err && rows.length > 0 )
 	{    
 		  var obj= '{"message":"The action was successful","user":[';	
@@ -320,9 +332,9 @@ else{
     }			
    else if(err)
     {
-	  connection.end();
+	  readconnection.release();
 	  var obj= '{"message":"There are no users that match that criteria"}';
-	  req.session.touch();
+	
 	  res.setHeader('Content-Type', 'application/json');
 	  return res.send(obj); 
     }
@@ -330,13 +342,14 @@ else{
     { 	  
 	
 	  var obj= '{"message":"There are no users that match that criteria"}';
-	  req.session.touch();
+	 
 	  res.setHeader('Content-Type', 'application/json');
 	  return res.send(obj);  
 		  	 
 		  
    } 
  });
+}); 
 }
  (req,res,next);
 });
@@ -345,7 +358,7 @@ else{
 app.post( '/addProducts',  function(req, res, next) { 
 console.log('entered');
 console.log(req.body.asin+ " " + req.body.productName+ " " + req.body.productDescription + " " + req.body.group);
-var params =[req.body.asin,req.body.productName,req.body.productDescription,req.body.group];
+var params =[req.body.productName,req.body.productDescription,req.body.group,req.body.asin];
 var asin = req.body.asin;
 var pname= req.body.productName;
 var pdesc= req.body.productDescription;
@@ -376,9 +389,11 @@ else if(!asin || !pname  || !pdesc|| !grp )
 	return res.send(obj);			
 }
 
-else{        
-	   var queries = connection.query("INSERT INTO productdata values (?,?,?,?)", params, 
+else{   
+       writeconnectionPool.getConnection(function(err,writeconnection){     
+	   var queries = writeconnection.query("INSERT INTO productdata values (?,?,?,?)", params, 
 	   function(err, rows, fields) {
+		 writeconnection.release();
 		 if (err)
 			{
 			  console.log("Error inserting product : %s ",err );
@@ -390,10 +405,11 @@ else{
 		  {
 			  var obj= '{"message":"'+req.body.productName+ ' was successfully added to the system"}';
 			  console.log(obj+" ..");
-			  req.session.touch();
+			
 			  res.setHeader('Content-Type', 'application/json');
 			  return res.send(obj);  
 		  }		 
+		});	 
 		});	  
     }
  (req,res,next);
@@ -409,7 +425,7 @@ var name= req.session.username;
 if(typeof name === 'undefined' || name == null)
 {
   var obj= '{"message":"You are not currently logged in"}'; 	
-  req.session.touch();
+ 
   res.setHeader('Content-Type', 'application/json');
   return res.send(obj);
 	
@@ -449,14 +465,16 @@ else{
 	    querystring= querystring.substring(0, querystring.length - 1);
 		querystring+=" where asin='" +req.body.asin+"'";
 		console.log("Query String : %s ",querystring );
-		 var queries = connection.query(querystring, 
+		 writeconnectionPool.getConnection(function(err,writeconnection){    
+		 var queries = writeconnection.query(querystring, 
 	     function(err, rows, fields) {
+	     writeconnection.release();
 		 if (err)
 			{
 			  
 			  console.log("Error updating : %s ",err );
 			    var obj= '{"message":"The input you provided is not valid"}';	
-			  connection.end();
+			  writeconnection.release();
 			  return res.send(obj); 
 			
 		  }
@@ -469,10 +487,11 @@ else{
 		  {   
 			  req.session.productName=req.body.productName;
 			  var obj= '{"message":"'+req.session.productName+ ' was successfully updated"}';
-			  req.session.touch();			  
+			 			  
 			  res.setHeader('Content-Type', 'application/json');
 			  return res.send(obj);  
 		  }		 
+		});	
 		});	 
 
 }
@@ -516,8 +535,9 @@ else
 }
 
 console.log("querystring"+querystring);
-
+readconnectionPool.getConnection(function(err,readconnection){
 var queries = readconnection.query(querystring, function(err, rows, fields) {
+   readconnection.release();
    if (!err && rows.length > 0 )
 	{    
 		  var obj= '{"message":"The action was successful","product":[';	
@@ -536,17 +556,15 @@ var queries = readconnection.query(querystring, function(err, rows, fields) {
     { 	  
 	
 	  var obj= '{"message":"There are no products that match that criteria"}';
-	  req.session.touch();
 	  res.setHeader('Content-Type', 'application/json');
 	  return res.send(obj);  
 		  	 
 		  
     } 
  });
+}); 
  (req,res,next);
 });
-
-
 
 
 app.post( '/buyProducts',  function(req, res, next) { 
@@ -588,6 +606,8 @@ str=str+","+asin;
 
 console.log("string..."+str);
 console.log("text..."+str.substring(1,str.length));
+
+readconnectionPool.getConnection(function(err,readconnection){
 var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.length)+"') as temp;", function(err, rows, fields) {
 	if(rows[0].temp == 1 ) {			
 		var obj= '{"message":"There are no products that match that criteria"}';
@@ -597,8 +617,10 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
 			
       else{	 
 	   var utcDate=new Date().getTime();
-	   var values =[name,utcDate]; 
-	   var queries = connection.query("INSERT into orderdetails(customerName,purchaseTime) VALUES (?,?)", values, function(err, rows, fields) {
+	   var values =[name,utcDate];
+       
+       writeconnectionPool.getConnection(function(err,writeconnection){	   
+	   var queries = writeconnection.query("INSERT into orderdetails(customerName,purchaseTime) VALUES (?,?)", values, function(err, rows, fields) {
 	   console.log("aray"+array[i]);
 	   if(err) { 
 		   console.log("Error Inserting in database");
@@ -606,7 +628,7 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
 	   }
 	   else {
 	   var id=0;
-	   var orderIdquery = connection.query("SELECT orderId from orderdetails where customerName like '%"+name+"%' and purchaseTime ="+utcDate, function(err, rows, fields) {
+	   var orderIdquery = readconnection.query("SELECT orderId from orderdetails where customerName like '%"+name+"%' and purchaseTime ="+utcDate, function(err, rows, fields) {
 	   if (!err && rows.length > 0 )
 		{    
 		  id= rows[0].orderId
@@ -620,7 +642,7 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
 			var asin=temp[1].substring(1,temp[1].length-2);				
 			var params =[asin,id,name];				 
 			console.log("params.."+params);
-			var queries = connection.query("INSERT into purchaserecord VALUES (?,?,?)", params, function(err, rows, fields) {
+			var queries = writeconnection.query("INSERT into purchaserecord VALUES (?,?,?)", params, function(err, rows, fields) {
 			console.log("inside query"+err);
 			if(err) { errflag = 1; return;}
 			else {console.log("inserted"); return;}
@@ -651,7 +673,11 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
    });
   }
  });	
+ writeconnection.release();
+});
 }
+});	
+readconnection.release();
 });	
 (req,res,next);
 });
@@ -675,8 +701,11 @@ else if( name != "jadmin")
 	return res.send(obj);			
 }	
 
+readconnectionPool.getConnection(function(err,readconnection){
 var queries=readconnection.query("SELECT b.productName as pname, a.asin, count(a.asin) as qty from purchaserecord a, productdata b where a.customerName ='"+uname+"' and a.asin=b.asin group by a.asin", function(err, rows,fields)
-{   console.log("length.."+rows.length);
+{   
+    readconnection.release();
+    console.log("length.."+rows.length);
     if (!err && rows.length > 0 )
 	{     console.log("history..");
 		  var obj= '{"message":"The action was successful","products":[';	
@@ -699,6 +728,7 @@ var queries=readconnection.query("SELECT b.productName as pname, a.asin, count(a
 		  }	
  
 });
+});
 (req,res,next);
 });
 
@@ -713,8 +743,11 @@ if(typeof name === 'undefined' || name == null)
   return res.send(obj);	
 }
 
+readconnectionPool.getConnection(function(err,readconnection){
 var queries=readconnection.query("select asin, count(asin) as qty from  (select asin from purchaserecord where orderId in (select DISTINCT orderId from purchaserecord where asin='"+asin+"') and asin !='"+asin+"') as temp group by asin order by qty desc limit 5", function(err, rows,fields)
-{   console.log("length.."+rows.length);
+{   
+    readconnection.release();
+    console.log("length.."+rows.length);
     if (!err && rows.length > 0 )
 	{     console.log("recos..");
 		  var obj= '{"message":"The action was successful","products":[';	
@@ -736,6 +769,7 @@ var queries=readconnection.query("select asin, count(asin) as qty from  (select 
 			  return res.send(obj);  
 		  }	
  
+});
 });
 (req,res,next);
 });
