@@ -510,14 +510,13 @@ var querystring;
 
 
 readconnectionPool.getConnection(function(err,readconnection){
-
 if(typeof req.body.asin === 'undefined' && typeof req.body.group ==='undefined' && typeof req.body.keyword === 'undefined'){
 	querystring = "SELECT asin, productName from productdata limit 1000;";
 }
 else{
 querystring = "SELECT asin, productName from productdata where";
 if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
-if(grp) { querystring += " `group` = "+ readconnection.escape(req.body.group)+ " or"; }
+if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
 if(key) { querystring+=  ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
   
 querystring = querystring.slice(0,-2);
@@ -543,12 +542,10 @@ var queries = readconnection.query(querystring, function(err, rows, fields) {
     }			
 
    else		  
-    { 	  
-	
+    { 	  	
 	  var obj= '{"message":"There are no products that match that criteria"}';
 	  res.setHeader('Content-Type', 'application/json');
-	  return res.send(obj);  
-		  	 
+	  return res.send(obj);	 
 		  
     } 
  });
