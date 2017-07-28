@@ -520,28 +520,29 @@ var params =[req.body.asin,req.body.keyword,req.body.group];
 var pin= req.body.asin;
 var key= req.body.keyword;
 var grp = req.body.group;
-var querystring;
+var querystring,prodstring;
 
 
 connectionPool.getConnection(function(err,readconnection){
 if(typeof req.body.asin === 'undefined' && typeof req.body.group ==='undefined' && typeof req.body.keyword === 'undefined'){
-	querystring = "SELECT asin, productName from productdata limit 1000;";
+	querystring = "SELECT asin, productName from productdata limit 10;";
 }
 else{
 querystring = "SELECT asin, productName from productdata where";
 if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
 if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
 if(key) { 
-  querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName='+ readconnection.escape(req.body.keyword) +' or'; }
+  var tmp=req.body.keyword+'%';
+ prodstring= querystring +  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName like ' +readconnection.escape(tmp)+' or'; 
+  querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName='+readconnection.escape(req.body.keyword) +' or'; }
   
 querystring = querystring.slice(0,-2);
-querystring += 'limit 1000;';
+querystring += 'limit 10;';
 }
 console.log("querystring"+querystring);
 
 var queries = readconnection.query(querystring, function(err, rows, fields) {
-   readconnection.release();
-   console.log("length..."+rows.length);
+  
    if (!err && rows.length > 0 )
 	{    
 		  var obj= '{"message":"The action was successful","product":[';	
@@ -559,15 +560,41 @@ var queries = readconnection.query(querystring, function(err, rows, fields) {
     }			
 
    else		  
-    { 	  	
+    { 	 
+       prodstring = prodstring.slice(0,-2);
+       prodstring += 'limit 10;';
+	   console.log("prodstring"+prodstring);
+       var queries = readconnection.query(prodstring, function(err, rows, fields) {
+        
+       if (rows.length > 0 )
+	    {    
+		  var obj= '{"message":"The action was successful","product":[';	
+	      var results = [];
+		  var prod = [];
+		  for(var i =0; i< rows.length; i++)
+		  {    
+	          prod= rows[i].productName.split(',');
+			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
+			  results.push(temp);
+		  }
+		  obj=obj+results+']}';
+		  res.setHeader('Content-Type', 'application/json');
+		  return res.send(obj);
+        }			
+	    
+		else {
+         
 	  var obj= '{"message":"There are no products that match that criteria"}';
 	  res.setHeader('Content-Type', 'application/json');
-	  return res.send(obj);	 
+	  return res.send(obj);	
+		}
+	   });		
 		  
     } 
  });
- readconnection.release();
+  readconnection.release();
 }); 
+
  (req,res,next);
 });
 
@@ -713,9 +740,11 @@ var queries=readconnection.query("SELECT b.productName as pname, a.asin, count(a
 	{     console.log("history..");
 		  var obj= '{"message":"The action was successful","products":[';	
 	      var results = [];
+		  var prod = [];
 		  for(var i =0; i< rows.length; i++)
-		  {
-			  var temp= '{"productName":"'+rows[i].pname+'","quantity":"'+rows[i].qty+'"}';
+		  {   
+	          prod= rows[i].pname.split(',')
+			  var temp= '{"productName":"'+prod[0]+'","quantity":"'+rows[i].qty+'"}';
 			  results.push(temp);
 		  }
 		  obj=obj+results+']}';
