@@ -13,7 +13,7 @@ var validator = require('validator');
 
 //DB connection
 
-var writeconnectionPool = mysql.createPool({
+var connectionPool = mysql.createPool({
   connectionLimit : 500,
   host     : 'mysql-ediss.c0kfhi1xeasa.us-east-1.rds.amazonaws.com',
   port     :  3306,

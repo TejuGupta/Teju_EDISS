@@ -532,7 +532,7 @@ querystring = "SELECT asin, productName from productdata where";
 if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
 if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
 if(key) { 
-  querystring+=  ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
+  querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName='+ readconnection.escape(req.body.keyword) +' or'; }
   
 querystring = querystring.slice(0,-2);
 querystring += 'limit 1000;';
