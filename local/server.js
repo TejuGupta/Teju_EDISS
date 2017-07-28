@@ -506,6 +506,7 @@ else{
 
 
 
+
 app.post( '/viewProducts',  function(req, res, next) { 
 console.log('entered');
 console.log(req.body.asin+ " " + req.body.keyword+ " "+ req.body.group);
@@ -520,31 +521,6 @@ connectionPool.getConnection(function(err,readconnection){
 
 if(typeof req.body.asin === 'undefined' && typeof req.body.group ==='undefined' && typeof req.body.keyword === 'undefined'){
 	querystring = "SELECT asin, productName from productdata limit 1000;";
-}
-else{
-querystring = "SELECT asin, productName from productdata where";
-
-if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
-
-if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
-
-if(key) {
-    var word = req.body.keyword;
-    var numberOfWords = req.body.keyword.split(" ");
-    if(numberOfWords.length > 1){
-      //console.log(word);
-        if(word.charAt(0) !== '\"'){
-        req.body.keyword = "\"" + req.body.keyword + "\"";
-      }
-	}
-	
-	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName ='+ readconnection.escape(req.body.keyword) +'or'; 
-	
-	}
-  
-  querystring = querystring.slice(0,-2);
-  querystring += 'limit 1000;';
-}
 	console.log("querystring"+querystring);
     var queries = readconnection.query(querystring, function(err, rows, fields) {
    
@@ -554,8 +530,9 @@ if(key) {
 		  var obj= '{"message":"The action was successful","product":[';	
 	      var results = [];
 		  for(var i =0; i< rows.length; i++)
-		  {
-			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+rows[i].productName+'"}';
+		  {   
+	          var prod= rows[i].productName.split(',');			  
+			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
 			  results.push(temp);
 		  }
 		  obj=obj+results+']}';
@@ -569,27 +546,20 @@ if(key) {
 	  res.setHeader('Content-Type', 'application/json');
 	  return res.send(obj); 	
     } 
- });  
+ });
 }
 else{
 querystring = "SELECT asin, productName from productdata where";
 prodstring= "SELECT asin, productName from productdata where";
 
-if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; prodstring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
+if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; 
+		  prodstring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
 
 if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or';
           prodstring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
 
 if(key) {
-   /* var word = req.body.keyword;
-    var numberOfWords = req.body.keyword.split(" ");
-    if(numberOfWords.length > 1){
-      //console.log(word);
-        if(word.charAt(0) !== '\"'){
-        req.body.keyword = "\"" + req.body.keyword + "\"";
-      }
-	} */
-	
+
 	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName ='+ readconnection.escape(req.body.keyword) +'or'; 
 	
 	}
@@ -605,8 +575,9 @@ if(key) {
 		  var obj= '{"message":"The action was successful","product":[';	
 	      var results = [];
 		  for(var i =0; i< rows.length; i++)
-		  {
-			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+rows[i].productName+'"}';
+		  {   
+	          var prod=rows[i].productName.split(',');
+			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
 			  results.push(temp);
 		  }
 		  obj=obj+results+']}';
@@ -615,8 +586,7 @@ if(key) {
     }			
    else		  
     { 
-      prodstring + = ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or';
-	  
+      prodstring + = ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
 	  
 	  prodstring = prodstring.slice(0,-2);
       prodstring += 'limit 1000;';
@@ -629,8 +599,9 @@ if(key) {
 		  var obj= '{"message":"The action was successful","product":[';	
 	      var results = [];
 		  for(var i =0; i< rows.length; i++)
-		  {
-			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+rows[i].productName+'"}';
+		  {   
+	          var prod =rows[i].productName.split(',');
+			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
 			  results.push(temp);
 		  }
 		  obj=obj+results+']}';
@@ -651,12 +622,8 @@ if(key) {
   });
  }  
 });  
-
-  
-}
  readconnection.release();
-}); 
- (req,res,next);
+  
 });
 
 
