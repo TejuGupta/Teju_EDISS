@@ -618,7 +618,6 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
        
        writeconnectionPool.getConnection(function(err,writeconnection){	   
 	   var queries = writeconnection.query("INSERT into orderdetails(customerName,purchaseTime) VALUES (?,?)", values, function(err, rows, fields) {
-	   console.log("aray"+array[i]);
 	   if(err) { 
 		   console.log("Error Inserting in database");
 		   return; 
@@ -634,7 +633,6 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
 	       { 
             console.log("aray"+array[i]);
 		    var errflag = 0;
-			console.log("aray"+array[i]);
 			var temp = array[i].split(':');
 			var asin=temp[1].substring(1,temp[1].length-2);				
 			var params =[asin,id,name];				 
