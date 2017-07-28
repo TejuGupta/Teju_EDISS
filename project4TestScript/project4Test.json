@@ -1,11 +1,11 @@
 {
   "config": {
-    "target": "http://ec2-54-226-98-157.compute-1.amazonaws.com:8080",
+    "target": "http://localhost:3000",
     "http": {
 		"timeout": 3
   },
     "phases": [
-      {"duration": 180, "arrivalCount": 100}
+      {"duration": 60, "arrivalCount": 10}
     ],
     "payload": [
     {

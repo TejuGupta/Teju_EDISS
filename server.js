@@ -74,7 +74,7 @@ var params =[req.body.username,req.body.password];
 res.setHeader('Content-Type', 'application/json');
 console.log('entered');
 console.log(req.body.username+ " " + req.body.password); 
-     readconnectionPool.getConnection(function(err,readconnection){
+     writeconnectionPool.getConnection(function(err,readconnection){
 		var queries = readconnection.query("SELECT * from userdata where username=? and password=?", params, function(err, rows, fields) {
 		readconnection.release();
 		if ((!err && rows.length > 0) )
@@ -528,7 +528,18 @@ if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }
 
 if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
 
-if(key) { querystring+=  ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
+if(key) {
+     var word = req.body.keyword;
+    var numberOfWords = req.body.keyword.split(" ");
+    if(numberOfWords.length > 1){
+      //console.log(word);
+        if(word.charAt(0) !== '\"'){
+        req.body.keyword = "\"" + req.body.keyword + "\"";
+      }
+	}
+	querystring+=  ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
+	
+	}
   
   querystring = querystring.slice(0,-2);
   querystring += 'limit 1000;';
@@ -627,7 +638,7 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
 	   }
 	   else {
 	   var id=0;
-	   var orderIdquery = readconnection.query("SELECT orderId from orderdetails where customerName like '%"+name+"%' and purchaseTime ="+utcDate, function(err, rows, fields) {
+	   var orderIdquery = writeconnection.query("SELECT orderId from orderdetails where customerName like '%"+name+"%' and purchaseTime ="+utcDate, function(err, rows, fields) {
 	   if (!err && rows.length > 0 )
 		{    
 		  id= rows[0].orderId
