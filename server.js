@@ -76,7 +76,7 @@ console.log('entered');
 console.log(req.body.username+ " " + req.body.password); 
      writeconnectionPool.getConnection(function(err,readconnection){
 		var queries = readconnection.query("SELECT * from userdata where username=? and password=?", params, function(err, rows, fields) {
-		readconnection.release();
+		
 		if ((!err && rows.length > 0) )
 			{    
 		    
@@ -96,6 +96,7 @@ console.log(req.body.username+ " " + req.body.password);
 			  return res.send(obj);
 			} 
 		});
+		readconnection.release();
 	 });
  (req,res,next);
 });
@@ -135,7 +136,7 @@ else{
   	   writeconnectionPool.getConnection(function(err,writeconnection){
 	   var queries = writeconnection.query("INSERT INTO userdata set fname=? , lname=? , address=? ,  city =?, state=? , zip= ?, email=? , username= ?, password= ? ", params, 
 	   function(err, rows, fields) {
-		 writeconnection.release();
+		 
 		 if (err)
 			{
 			  var obj= '{"message":"The input you provided is not valid"}';	
@@ -152,7 +153,8 @@ else{
 			  res.setHeader('Content-Type', 'application/json');
 			  return res.send(obj);  
 		  }		 
-		});	  
+		});	 
+        writeconnection.release();		
 	   });	
    
  }
@@ -248,7 +250,7 @@ else{
 		 writeconnectionPool.getConnection(function(err,writeconnection){
 		 var queries = writeconnection.query(querystring, 
 	     function(err, rows, fields) {
-		 writeconnection.release();
+		
 		 if (err)
 			{
 			  
@@ -268,6 +270,7 @@ else{
 			  return res.send(obj);  
 		  }		 
 		});	
+		 writeconnection.release();
 	  });		
 
 }
@@ -318,7 +321,7 @@ else{
 		
    readconnectionPool.getConnection(function(err,readconnection){
    var queries = readconnection.query(querystring,  function(err, rows, fields) {
-   readconnection.release();
+   
    if (!err && rows.length > 0 )
 	{    
 		  var obj= '{"message":"The action was successful","user":[';	
@@ -353,6 +356,7 @@ else{
 		  
    } 
  });
+ readconnection.release();
 }); 
 }
  (req,res,next);
@@ -397,7 +401,7 @@ else{
        writeconnectionPool.getConnection(function(err,writeconnection){     
 	   var queries = writeconnection.query("INSERT INTO productdata values (?,?,?,?)", params, 
 	   function(err, rows, fields) {
-		 writeconnection.release();
+		
 		 if (err)
 			{
 			  console.log("Error inserting product : %s ",err );
@@ -414,6 +418,7 @@ else{
 			  return res.send(obj);  
 		  }		 
 		});	 
+		 writeconnection.release();
 	   });		
     }
  (req,res,next);
@@ -474,7 +479,7 @@ else{
 		
 		 var queries = writeconnection.query(querystring, 
 	     function(err, rows, fields) {
-	     writeconnection.release();
+	     
 		 if (err)
 			{
 			  
@@ -498,6 +503,7 @@ else{
 			  return res.send(obj);  
 		  }		 
 		});	
+		writeconnection.release();
 	 });		
 
 }
@@ -549,7 +555,7 @@ if(key) {
 console.log("querystring"+querystring);
 
 var queries = readconnection.query(querystring, function(err, rows, fields) {
-   readconnection.release();
+   
    console.log("length..."+rows.length);
    if (!err && rows.length > 0 )
 	{    
@@ -571,6 +577,7 @@ var queries = readconnection.query(querystring, function(err, rows, fields) {
 	  return res.send(obj); 	
     } 
  });
+ readconnection.release();
 }); 
  (req,res,next);
 });
@@ -631,7 +638,6 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
        
        writeconnectionPool.getConnection(function(err,writeconnection){	   
 	   var queries = writeconnection.query("INSERT into orderdetails(customerName,purchaseTime) VALUES (?,?)", values, function(err, rows, fields) {
-	   console.log("aray"+array[i]);
 	   if(err) { 
 		   console.log("Error Inserting in database");
 		   return; 
@@ -647,7 +653,6 @@ var queries = readconnection.query("SELECT CHECKASIN('"+str.substring(1,str.leng
 	       { 
             console.log("aray"+array[i]);
 		    var errflag = 0;
-			console.log("aray"+array[i]);
 			var temp = array[i].split(':');
 			var asin=temp[1].substring(1,temp[1].length-2);				
 			var params =[asin,id,name];				 
@@ -713,7 +718,7 @@ else if( name != "jadmin")
 readconnectionPool.getConnection(function(err,readconnection){
 var queries=readconnection.query("SELECT b.productName as pname, a.asin, count(a.asin) as qty from purchaserecord a, productdata b where a.customerName ='"+uname+"' and a.asin=b.asin group by a.asin", function(err, rows,fields)
 {   
-    readconnection.release();
+   
     console.log("length.."+rows.length);
     if (!err && rows.length > 0 )
 	{     console.log("history..");
@@ -737,7 +742,7 @@ var queries=readconnection.query("SELECT b.productName as pname, a.asin, count(a
 		  }	
  
 });
-
+ readconnection.release();
 });
 (req,res,next);
 });
@@ -756,7 +761,7 @@ if(typeof name === 'undefined' || name == null)
 readconnectionPool.getConnection(function(err,readconnection){
 var queries=readconnection.query("select asin, count(asin) as qty from  (select asin from purchaserecord where orderId in (select DISTINCT orderId from purchaserecord where asin='"+asin+"') and asin !='"+asin+"') as temp group by asin order by qty desc limit 5", function(err, rows,fields)
 {   
-    readconnection.release();
+   
     console.log("length.."+rows.length);
     if (!err && rows.length > 0 )
 	{     console.log("recos..");
@@ -780,7 +785,7 @@ var queries=readconnection.query("select asin, count(asin) as qty from  (select 
 		  }	
  
 });
-
+ readconnection.release();
 });
 (req,res,next);
 });
