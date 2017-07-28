@@ -565,7 +565,7 @@ if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.
 
 if(key) {
 
-	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName ='+ readconnection.escape(req.body.keyword) +'or'; 
+	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
 	
 	}
   

@@ -560,7 +560,7 @@ if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.
 
 if(key) {
 
-	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) AND productName ='+ readconnection.escape(req.body.keyword) +'or'; 
+	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
 	
 	}
   
@@ -574,9 +574,10 @@ if(key) {
 	{    
 		  var obj= '{"message":"The action was successful","product":[';	
 	      var results = [];
+		  var prod = [];
 		  for(var i =0; i< rows.length; i++)
 		  {   
-	          var prod=rows[i].productName.split(',');
+	          prod=rows[i].productName.split(',');
 			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
 			  results.push(temp);
 		  }
@@ -598,9 +599,10 @@ if(key) {
 	   {    
 		  var obj= '{"message":"The action was successful","product":[';	
 	      var results = [];
+		  var prod = [];
 		  for(var i =0; i< rows.length; i++)
 		  {   
-	          var prod =rows[i].productName.split(',');
+	          prod =rows[i].productName.split(',');
 			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
 			  results.push(temp);
 		  }
