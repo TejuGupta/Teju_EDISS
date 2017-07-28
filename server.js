@@ -523,7 +523,7 @@ var grp = req.body.group;
 var querystring;
 
 
-readconnectionPool.getConnection(function(err,readconnection){
+connectionPool.getConnection(function(err,readconnection){
 if(typeof req.body.asin === 'undefined' && typeof req.body.group ==='undefined' && typeof req.body.keyword === 'undefined'){
 	querystring = "SELECT asin, productName from productdata limit 1000;";
 }
