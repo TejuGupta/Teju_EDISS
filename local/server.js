@@ -586,7 +586,7 @@ if(key) {
     }			
    else		  
     { 
-      prodstring + = ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
+      prodstring += ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
 	  
 	  prodstring = prodstring.slice(0,-2);
       prodstring += 'limit 1000;';
