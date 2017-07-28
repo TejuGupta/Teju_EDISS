@@ -512,6 +512,7 @@ else{
 
 
 
+
 app.post( '/viewProducts',  function(req, res, next) { 
 console.log('entered');
 console.log(req.body.asin+ " " + req.body.keyword+ " "+ req.body.group);
@@ -519,69 +520,36 @@ var params =[req.body.asin,req.body.keyword,req.body.group];
 var pin= req.body.asin;
 var key= req.body.keyword;
 var grp = req.body.group;
-var querystring,prodstring;
+var querystring;
 
 
-connectionPool.getConnection(function(err,readconnection){
-
+readconnectionPool.getConnection(function(err,readconnection){
 if(typeof req.body.asin === 'undefined' && typeof req.body.group ==='undefined' && typeof req.body.keyword === 'undefined'){
 	querystring = "SELECT asin, productName from productdata limit 1000;";
-	console.log("querystring"+querystring);
-    var queries = readconnection.query(querystring, function(err, rows, fields) {
-   
-   console.log("length..."+rows.length);
-   if (!err && rows.length > 0 )
-	{    
-		  var obj= '{"message":"The action was successful","product":[';	
-	      var results = [];
-		  for(var i =0; i< rows.length; i++)
-		  {   
-	          var prod= rows[i].productName.split(',');			  
-			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
-			  results.push(temp);
-		  }
-		  obj=obj+results+']}';
-		  res.setHeader('Content-Type', 'application/json');
-		  return res.send(obj);
-    }			
-   else		  
-    { 
-           
-	  var obj= '{"message":"There are no products that match that criteria"}';	  
-	  res.setHeader('Content-Type', 'application/json');
-	  return res.send(obj); 	
-    } 
- });
 }
 else{
 querystring = "SELECT asin, productName from productdata where";
-prodstring= "SELECT asin, productName from productdata where";
-
-if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; 
-		  prodstring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
-
-if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or';
-          prodstring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
-
-if(key) {
-
-	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
-	
-	}
+if(pin) { querystring+=" asin = "+ readconnection.escape(req.body.asin)+" or"; }  
+if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
+if(key) { 
+  querystring+=  ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; }
   
-  querystring = querystring.slice(0,-2);
-  querystring += 'limit 1000;';
-  console.log("querystring"+querystring);
-  var queries = readconnection.query(querystring, function(err, rows, fields) {
-   
+querystring = querystring.slice(0,-2);
+querystring += 'limit 1000;';
+}
+console.log("querystring"+querystring);
+
+var queries = readconnection.query(querystring, function(err, rows, fields) {
+   readconnection.release();
    console.log("length..."+rows.length);
    if (!err && rows.length > 0 )
 	{    
 		  var obj= '{"message":"The action was successful","product":[';	
 	      var results = [];
+		  var prod = [];
 		  for(var i =0; i< rows.length; i++)
-		  {   
-	          var prod=rows[i].productName.split(',');
+		  {    
+	          prod= rows[i].productName.split(',');
 			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
 			  results.push(temp);
 		  }
@@ -589,46 +557,18 @@ if(key) {
 		  res.setHeader('Content-Type', 'application/json');
 		  return res.send(obj);
     }			
+
    else		  
-    { 
-      prodstring += ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
-	  
-	  prodstring = prodstring.slice(0,-2);
-      prodstring += 'limit 1000;';
-      console.log("prodstring"+prodstring);
-      var queries = readconnection.query(prodstring, function(err, rows, fields) {
-   
-      console.log("length..."+rows.length);
-      if (!err && rows.length > 0 )
-	   {    
-		  var obj= '{"message":"The action was successful","product":[';	
-	      var results = [];
-		  for(var i =0; i< rows.length; i++)
-		  {   
-	          var prod =rows[i].productName.split(',');
-			  var temp= '{"asin":"'+rows[i].asin+'","productName":"'+prod[0]+'"}';
-			  results.push(temp);
-		  }
-		  obj=obj+results+']}';
-		  res.setHeader('Content-Type', 'application/json');
-		  return res.send(obj);
-       }			
-	  
-	else {
-			 //desc 
-	  var obj= '{"message":"There are no products that match that criteria"}';	  
+    { 	  	
+	  var obj= '{"message":"There are no products that match that criteria"}';
 	  res.setHeader('Content-Type', 'application/json');
-	  return res.send(obj); 
-	}  
-	
-    });
-	  
-	}
-  });
- }  
-});  
+	  return res.send(obj);	 
+		  
+    } 
+ });
  readconnection.release();
-  
+}); 
+ (req,res,next);
 });
 
 
