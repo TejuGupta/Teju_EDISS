@@ -560,12 +560,12 @@ if(grp) { querystring += ' match(`group`) against ('+ readconnection.escape(req.
 
 if(key) {
 
-	querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
+	     querystring+=  ' match(productName) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
 	
 	}
   
   querystring = querystring.slice(0,-2);
-  querystring += 'limit 1000;';
+  querystring += 'limit 1;';
   console.log("querystring"+querystring);
   var queries = readconnection.query(querystring, function(err, rows, fields) {
    
@@ -590,7 +590,7 @@ if(key) {
       prodstring += ' match(productName,productDescription) against ('+ readconnection.escape(req.body.keyword) +' IN NATURAL LANGUAGE MODE) or'; 
 	  
 	  prodstring = prodstring.slice(0,-2);
-      prodstring += 'limit 1000;';
+      prodstring += 'limit 1;';
       console.log("prodstring"+prodstring);
       var queries = readconnection.query(prodstring, function(err, rows, fields) {
    
@@ -622,9 +622,10 @@ if(key) {
 	  
 	}
   });
+  	 readconnection.release();
  }  
 });  
- readconnection.release();
+
   
 });
 
